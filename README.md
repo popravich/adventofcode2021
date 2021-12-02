@@ -1,11 +1,14 @@
 # adventofcode2021
+
 Advent Of Code 2021
 
 ## CLI variant of code.
 
 ```
-    cargo run --bin day1
+    cargo run --bin dayX
 ```
+
+where `X` is the day number.
 
 ## WebAssembly variant of code.
 
