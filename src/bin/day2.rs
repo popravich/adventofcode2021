@@ -6,22 +6,28 @@ static DAY2_INPUT: &str = include_str!("../input/day2.txt");
 fn main() {
     let mut pos = Position::default();
 
+    let mut aimed_pos = Aim::default();
+
     let commands = DAY2_INPUT
         .lines()
         .map(|line| line.parse::<MoveCommand>().expect("Invalid command"));
 
     for cmd in commands {
-        pos = pos.apply(&cmd);
+        pos.apply(&cmd);
+        aimed_pos.apply(&cmd);
     }
-    println!("Our position is {:?}: {}", pos, pos.horizontal * pos.depth);
+    println!("Our position is {:?}: {}", pos, pos.product());
+
+    println!("Okay, now our position is {:?}: {}",
+        aimed_pos, aimed_pos.position.product());
 }
 
 
 #[derive(Debug)]
 pub enum MoveCommand {
-    Forward(usize),
-    Down(usize),
-    Up(usize),
+    Forward(isize),
+    Down(isize),
+    Up(isize),
 }
 
 impl FromStr for MoveCommand {
@@ -31,7 +37,7 @@ impl FromStr for MoveCommand {
         let (cmd, unit) = val.split_once(' ')
             .ok_or_else(|| "Line without space".to_string())
             .and_then(|(cmd, unit)| {
-                unit.parse::<usize>()
+                unit.parse::<isize>()
                     .map_err(|e| format!("{}", e))
                     .map(|unit| (cmd, unit))
             })?;
@@ -47,23 +53,49 @@ impl FromStr for MoveCommand {
 
 #[derive(Debug, Default)]
 pub struct Position {
-    pub horizontal: usize,
-    pub depth: usize,
+    pub horizontal: isize,
+    pub depth: isize,
 }
 
 
 impl Position {
-    pub fn apply(self, cmd: &MoveCommand) -> Self {
+    pub fn apply(&mut self, cmd: &MoveCommand) {
         use self::MoveCommand::*;
 
-        let (horizontal, depth) = match cmd {
-            Forward(x) => (self.horizontal + x, self.depth),
-            Down(x) => (self.horizontal, self.depth + x),
-            Up(x) => (self.horizontal, self.depth - x),
+        match cmd {
+            Forward(x) => self.horizontal += x,
+            Down(x) => self.depth += x,
+            Up(x) => self.depth -= x,
         };
-        Position {
-            horizontal,
-            depth,
-        }
+    }
+
+    pub fn product(&self) -> isize {
+        self.horizontal * self.depth
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct Aim {
+    pub aim: isize,
+    pub position: Position,
+}
+
+impl Aim {
+
+    pub fn apply(&mut self, cmd: &MoveCommand) {
+        use self::MoveCommand::*;
+
+        match *cmd {
+            Forward(x) => {
+                self.position.apply(cmd);
+                self.position.apply(&Down(self.aim * x))
+            }
+            Down(x) => {
+                self.aim += x;
+            }
+            Up(x) => {
+                self.aim -= x;
+            }
+        };
     }
 }
