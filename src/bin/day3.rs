@@ -1,19 +1,10 @@
-use std::cmp::Ordering;
-
 static DATA: &str = include_str!("../input/day3.txt");
+
+use advent::day3::{parse_text, MostCommonBit};
 
 fn main() {
 
-    let bits_count = DATA
-        .lines()
-        .map(|s| s.len())
-        .max()
-        .expect("no data");
-
-    let numbers: Vec<_> = DATA
-        .lines()
-        .map(|line| usize::from_str_radix(line, 2).expect("non binary number"))
-        .collect();
+    let (bits_count, numbers) = parse_text(DATA);
 
     let common_bits_mask: usize = (0..bits_count)
         .into_iter()
@@ -49,37 +40,4 @@ fn main() {
     println!("Oxygen generator: {}", oxygen_generator);
     println!("CO2 rating: {}", co2_rating);
     println!("Life support rating: {}", oxygen_generator * co2_rating);
-}
-
-
-pub trait MostCommonBit {
-    fn mcb(&self, bit: u32) -> Option<usize>;
-
-    fn mcb_with_equal(&self, bit: u32, on_equal: usize) -> usize {
-        self.mcb(bit).unwrap_or(on_equal)
-    }
-
-    fn lcb(&self, bit: u32) -> Option<usize> {
-        self.mcb(bit).map(|b| !b)
-    }
-
-    fn lcb_with_equal(&self, bit: u32, on_equal: usize) -> usize {
-        self.lcb(bit).unwrap_or(on_equal)
-    }
-}
-
-impl MostCommonBit for Vec<usize> {
-    fn mcb(&self, bit: u32) -> Option<usize> {
-        assert!(bit < usize::BITS, "Bit is out of range");
-        let (ones, nils) = self
-            .iter()
-            .map(|n| n >> bit & 1)
-            .map(|b| (b, !b & 1))
-            .fold((0, 0), |(a1, b1), (a2, b2)| (a1 + a2, b1 + b2));
-        match ones.cmp(&nils) {
-            Ordering::Less => Some(0),
-            Ordering::Greater => Some(1),
-            Ordering::Equal => None,
-        }
-    }
 }
