@@ -60,6 +60,13 @@ impl Table {
             .map(|(k, _)| *k)
             .sum()
     }
+
+    pub fn is_complete(&self) -> bool {
+        self.rows_match_count
+            .iter()
+            .chain(&self.cols_match_count)
+            .any(|x| *x == N as u8)
+    }
 }
 
 impl Default for Table {
