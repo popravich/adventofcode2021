@@ -37,6 +37,6 @@ function timeit(callback, label) {
   }
 }
 
-installFormHandler(1, wasm.get_answer);
+installFormHandler(1, wasm.day1_task);
 installFormHandler(2, wasm.day2_task);
 installFormHandler(3, wasm.day3_task);

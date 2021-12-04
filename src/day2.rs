@@ -1,5 +1,21 @@
 use std::str::FromStr;
 
+pub fn main(input: &str) -> (Position, Aim) {
+    let mut pos = Position::default();
+    let mut aimed_pos = Aim::default();
+
+    let commands = input
+        .lines()
+        .map(|line| line.parse::<MoveCommand>().expect("Invalid command"));
+
+    for cmd in commands {
+        pos.apply(&cmd);
+        aimed_pos.apply(&cmd);
+    }
+    println!("Our position is: {:?}", pos);
+    println!("Okay, now our position is: {:?}", aimed_pos);
+    (pos, aimed_pos)
+}
 
 #[derive(Debug)]
 pub enum MoveCommand {
