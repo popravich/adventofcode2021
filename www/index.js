@@ -37,6 +37,7 @@ function timeit(callback, label) {
   }
 }
 
-installFormHandler(1, wasm.day1_task);
-installFormHandler(2, wasm.day2_task);
-installFormHandler(3, wasm.day3_task);
+
+for(let i = 1; i <= document.forms.length; i++){
+  installFormHandler(i, wasm[`day${i}_task`]);
+}

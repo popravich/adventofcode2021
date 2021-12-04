@@ -8,17 +8,14 @@ pub mod day4;
 
 #[wasm_bindgen]
 pub struct Answer {
-    pub result1: isize,
-    pub result2: isize,
+    pub result1: usize,
+    pub result2: usize,
 }
 
 #[wasm_bindgen]
 pub fn day1_task(input: &str) -> Answer {
     let (result1, result2) = day1::main(input);
-    Answer {
-        result1: result1 as isize,
-        result2: result2 as isize,
-    }
+    Answer { result1, result2 }
 }
 
 
@@ -26,18 +23,23 @@ pub fn day1_task(input: &str) -> Answer {
 pub fn day2_task(input: &str) -> Answer {
     let (pos, aimed_pos) = day2::main(input);
     Answer {
-        result1: pos.product(),
-        result2: aimed_pos.position.product(),
+        result1: pos.product() as usize,
+        result2: aimed_pos.position.product() as usize,
     }
 }
 
 
 #[wasm_bindgen]
 pub fn day3_task(input: &str) -> Answer {
-
     let metrics = day3::main(input);
     Answer {
-        result1: metrics.power_consumtion() as isize,
-        result2: metrics.life_support_rating() as isize,
+        result1: metrics.power_consumtion(),
+        result2: metrics.life_support_rating(),
     }
+}
+
+#[wasm_bindgen]
+pub fn day4_task(input: &str) -> Answer {
+    let (result1, result2) = day4::main(input);
+    Answer { result1, result2 }
 }
