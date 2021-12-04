@@ -1,5 +1,5 @@
 
-use advent::{parse_measurements, is_increasing};
+use advent::day1::{parse_measurements, is_increasing};
 
 static DATA: &str = include_str!("../input/day1.txt");
 

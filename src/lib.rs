@@ -1,13 +1,11 @@
 use wasm_bindgen::prelude::*;
 use web_sys::console;
 
-pub mod shared;
-
+pub mod day1;
 pub mod day2;
 pub mod day3;
 
-pub use shared::{is_increasing, parse_measurements};
-
+use day1::{is_increasing, parse_measurements};
 use day2::{Position, MoveCommand, Aim};
 use day3::MostCommonBit;
 
