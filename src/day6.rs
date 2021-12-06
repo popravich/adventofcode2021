@@ -1,4 +1,5 @@
 const DAYS: usize = 80;
+const DAYS2: usize = 256;
 
 const D: usize = 9;
 const RESET_INDEX: usize = 6;
@@ -11,7 +12,9 @@ pub fn main(input: &str) -> Result<(usize, usize), String> {
 
     let result1 = population.advance(DAYS);
     println!("After {} days: {}", DAYS, result1);
-    Ok((result1, 0))
+
+    let result2 = Population::new(&data).advance(DAYS2);
+    Ok((result1, result2))
 }
 
 pub fn parse_input(input: &str) -> Result<Vec<usize>, String> {
