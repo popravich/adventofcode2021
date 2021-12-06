@@ -5,7 +5,7 @@ const D: usize = 9;
 const RESET_INDEX: usize = 6;
 const NEW_FISH_INDEX: usize = 8;
 
-pub fn main(input: &str) -> Result<(usize, usize), String> {
+pub fn main(input: &str) -> Result<(u64, u64), String> {
     let data = parse_input(input)?;
 
     let mut population = Population::new(&data);
@@ -27,7 +27,7 @@ pub fn parse_input(input: &str) -> Result<Vec<usize>, String> {
 
 #[derive(Debug)]
 struct Population {
-    days: [usize; D],
+    days: [u64; D],
 }
 
 impl Population {
@@ -41,7 +41,7 @@ impl Population {
         Population { days }
     }
 
-    pub fn advance(&mut self, n: usize) -> usize {
+    pub fn advance(&mut self, n: usize) -> u64 {
         for _ in 0..n {
             let reset = self.days[0];
             let newbies = self.days[0];
@@ -54,7 +54,7 @@ impl Population {
         self.size()
     }
 
-    pub fn size(&self) -> usize {
+    pub fn size(&self) -> u64 {
         self.days.iter().sum()
     }
 }
