@@ -1,35 +1,29 @@
 use std::str::FromStr;
-use std::collections::HashSet;
+use std::collections::HashMap;
 use std::cmp;
 use std::ops;
 
 pub fn main(input: &str) -> Result<(usize, usize), String> {
     let data = parse_input(input)?;
+    let mut map1: HashMap<Point, usize> = HashMap::new();
+    let mut map2: HashMap<Point, usize> = HashMap::new();
 
-    let mut overlapping1 = HashSet::new();
-    let mut overlapping2 = HashSet::new();
-
-    let data1: Vec<_> = data
-        .iter()
-        .filter(|s| s.is_horizontal() || s.is_vertical())
-        .collect();
-
-    for (i, l1) in data1.iter().take(data.len() - 1).enumerate() {
-        for l2 in data1.iter().skip(i + 1) {
-            overlapping1.extend(l1.overlapping_points(l2))
+    for segm in &data {
+        if segm.is_diagonal() {
+            for p in segm.iter_points() {
+                *map2.entry(p).or_insert(0) += 1;
+            }
+            continue
+        }
+        for p in segm.iter_points() {
+            *map1.entry(p).or_insert(0) += 1;
+            *map2.entry(p).or_insert(0) += 1;
         }
     }
 
-    let data2: Vec<_> = data
-        .iter()
-        .filter(|s| s.is_horizontal() || s.is_vertical() || s.is_diagonal())
-        .collect();
-    for (i, l1) in data2.iter().take(data.len() - 1).enumerate() {
-        for l2 in data.iter().skip(i + 1) {
-            overlapping2.extend(l1.overlapping_points(l2))
-        }
-    }
-    Ok((overlapping1.len(), overlapping2.len()))
+    let result1 = map1.iter().filter(|&(_, x)| *x > 1).count();
+    let result2 = map2.iter().filter(|&(_, x)| *x > 1).count();
+    Ok((result1, result2))
 }
 
 pub fn parse_input(input: &str) -> Result<Vec<Segment>, String> {
@@ -71,10 +65,6 @@ pub enum Segment {
     Horizontal(Horizontal),
     Vertical(Vertical),
     Diagonal(Diagonal),
-}
-
-pub trait Contains {
-    fn contains(&self, point: &Point) -> bool;
 }
 
 
@@ -146,21 +136,6 @@ impl Segment {
         matches!(self, Segment::Diagonal(_))
     }
 
-    pub fn overlapping_points<'a>(&'a self, other: &Self) -> impl Iterator<Item=Point> + 'a {
-        // println!("XXXXXX {:?}, P: {:?}: {:?}", self, other.iter_points().collect::<Vec<_>>(),
-        //     other.iter_points().filter(|p| self.contains(p)).collect::<Vec<_>>());
-        other.iter_points().filter(|p| self.contains(p))
-    }
-
-    pub fn contains(&self, p: &Point) -> bool {
-        use self::Segment::*;
-        match self {
-            Horizontal(h) => h.contains(p),
-            Vertical(v) => v.contains(p),
-            Diagonal(d) => d.contains(p),
-        }
-    }
-
     pub fn iter_points(&self) -> impl Iterator<Item=Point> {
         use self::Segment::*;
         match self {
@@ -199,39 +174,6 @@ impl Diagonal {
             .into_iter()
             .zip(it)
             .map(|(x, y)| Point { x, y })
-    }
-}
-
-impl Contains for Horizontal {
-    fn contains(&self, p: &Point) -> bool {
-        self.y == p.y && (self.x1..=self.x2).contains(&p.x)
-    }
-}
-impl Contains for Vertical {
-    fn contains(&self, p: &Point) -> bool {
-        self.x == p.x && (self.y1..=self.y2).contains(&p.y)
-    }
-}
-impl Contains for Diagonal {
-    fn contains(&self, p: &Point) -> bool {
-        if !(self.from.x..=self.to.x).contains(&p.x) {
-            return false
-        }
-        let k = (self.to.y - self.from.y) / (self.to.x - self.from.x);
-        let b = self.from.y - (k * self.from.x);
-        // println!("P = {:?}", p);
-        // println!("F(x) = {} * x + {} = {}", k, b, self.from.y);
-        let y = (k * p.x) + b;
-        // println!("F(p) = {} == {}", y, y == p.y);
-        y == p.y
-        // let contains_x = p.x >= self.from.x && p.x <= self.to.x;
-        // if let Kind::Diagonal(k) = self.kind() {
-        //     let b = self.from.y - (k * self.from.x);
-        //     let y = p.x * k + b;
-        //     contains_x && y == p.y
-        // } else {
-        //     contains_x && p.y >= self.from.y && p.y <= self.to.y
-        // }
     }
 }
 
