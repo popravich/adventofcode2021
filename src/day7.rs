@@ -1,4 +1,3 @@
-use std::iter;
 use std::cmp;
 use std::collections::HashSet;
 
@@ -11,27 +10,30 @@ pub fn main(input: &str) -> Result<(usize, usize), String> {
     let mut min_fuel2 = usize::MAX;
     let unique: HashSet<_> = data.iter().cloned().collect();
 
-    let abs_diff = |(a, b): (&usize, usize)| cmp::max(*a, b) - cmp::min(*a, b);
+    let abs_diff = |a, b| cmp::max(a, b) - cmp::min(a, b);
 
-    for p in unique.iter() {
-        let fuel: usize = data.iter()
-            .zip(iter::repeat(*p))
-            .map(abs_diff)
-            .sum();
+    let max_pos = *unique.iter().max().expect("empty data");
+    let fuels = (0..max_pos)
+        .into_iter()
+        .map(|p| (p, data.iter().map(|x| abs_diff(p, *x)).sum::<usize>()));
+    for (pos, fuel) in fuels {
         if let cmp::Ordering::Less = fuel.cmp(&min_fuel) {
-            min_pos = *p;
+            min_pos = pos;
             min_fuel = fuel;
         }
     }
-    for p in 0..*unique.iter().max().expect("empty data") {
-        let crabs_fuel: usize = data.iter()
-            .zip(iter::repeat(p))
-            .map(abs_diff)
-            .map(|f| f * (1 + f) / 2)
-            .sum();
-        if let cmp::Ordering::Less = crabs_fuel.cmp(&min_fuel2) {
-            min_pos2 = p;
-            min_fuel2 = crabs_fuel;
+
+    let progression_sum = |x| x * (1 + x) / 2;
+    let crab_fuels = (0..max_pos)
+        .into_iter()
+        .map(|p| (
+            p,
+            data.iter().map(|x| abs_diff(p, *x)).map(progression_sum).sum::<usize>()
+        ));
+    for (pos, fuel) in crab_fuels {
+        if let cmp::Ordering::Less = fuel.cmp(&min_fuel2) {
+            min_pos2 = pos;
+            min_fuel2 = fuel;
         }
     }
     println!("Min fuel: {}", min_fuel);
