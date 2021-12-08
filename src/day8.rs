@@ -73,13 +73,25 @@ pub fn main(input: &str) -> Result<(usize, usize), String> {
     }
     let mut part2 = 0;
     for (indication_patterns, indication) in &data {
-        let mut patterns = Patterns::default();
         let mut transcoding_table = TranscodingTable::default();
         let mut frequencies: HashMap<char, u8> = HashMap::new();
 
+        let mut pattern_for_one = String::new();
+        let mut pattern_for_four = String::new();
+
         // Collect patterns into struct & count segments frequencies;
         for pattern in indication_patterns {
-            patterns.add(pattern);
+            match pattern.len() {
+                2 => {
+                    assert!(pattern_for_one.is_empty());
+                    pattern_for_one.push_str(pattern);
+                }
+                4 => {
+                    assert!(pattern_for_four.is_empty());
+                    pattern_for_four.push_str(pattern);
+                }
+                _ => ()
+            }
             for c in pattern.chars() {
                 *frequencies.entry(c).or_default() += 1;
             }
@@ -93,7 +105,7 @@ pub fn main(input: &str) -> Result<(usize, usize), String> {
         }
         // resolve few ambigious segment with equal frequencies
         // lookup for the segments of 1;
-        let segment_c = patterns.one
+        let segment_c = pattern_for_one
             .chars()
             .filter(|c| transcoding_table.transcode_char(c).len() > 1)
             .next()
@@ -101,7 +113,7 @@ pub fn main(input: &str) -> Result<(usize, usize), String> {
         transcoding_table.resolve_letters_ac(segment_c);
 
         // lookup for the segments of 4;
-        let segment_d = patterns.four
+        let segment_d = pattern_for_four
             .chars()
             .filter(|c| transcoding_table.transcode_char(c).len() > 1)
             .next()
@@ -129,42 +141,6 @@ pub fn parse_input(input: &str) -> Vec<(Vec<String>, Vec<String>)> {
         .collect()
 }
 
-
-#[derive(Default, Debug)]
-struct Patterns {
-    zero: Vec<String>,
-    one: String,
-    two: Vec<String>,
-    three: Vec<String>,
-    four: String,
-    five: Vec<String>,
-    six: Vec<String>,
-    seven: String,
-    eight: String,
-    nine: Vec<String>
-}
-
-impl Patterns {
-    fn add(&mut self, pat: &str) {
-        match pat.len() {
-            2 if self.one.is_empty() => self.one.push_str(pat),
-            3 if self.seven.is_empty() => self.seven.push_str(pat),
-            4 if self.four.is_empty() => self.four.push_str(pat),
-            5 => {
-                self.two.push(pat.to_string());
-                self.three.push(pat.to_string());
-                self.five.push(pat.to_string());
-            }
-            6 => {
-                self.zero.push(pat.to_string());
-                self.six.push(pat.to_string());
-                self.nine.push(pat.to_string());
-            }
-            7 if self.eight.is_empty() => self.eight.push_str(pat),
-            x => unreachable!("Unexpcected segments count: {}", x),
-        }
-    }
-}
 
 #[derive(Debug, Default)]
 pub struct TranscodingTable(HashMap<char, String>);
