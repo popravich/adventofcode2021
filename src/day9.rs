@@ -16,8 +16,10 @@ pub fn main(input: &str) -> Result<(usize, usize), String> {
         i += 1;
     }
 
-    let result1 = extremums.iter().map(|&(_, h)| h).sum::<usize>() + extremums.len();
-
+    let result1 = extremums
+        .iter()
+        .map(|&(_, h)| h)
+        .sum::<usize>() + extremums.len();
 
     let mut top_basins = [0usize; 4];
 
@@ -26,27 +28,21 @@ pub fn main(input: &str) -> Result<(usize, usize), String> {
 
     for p in extremums.iter().map(|&(i, _)| Point(i)) {
         assert!(p.is_basin(&heights));
-        visited.clear();
         to_check.clear();
         to_check.push(p);
+        visited.clear();
         visited.insert(p);
-        let mut size = 1;
         while !to_check.is_empty() {
             let p = to_check.remove(0);
-            for x in p.iter_adjacent(&heights).filter(|x| !visited.contains(x)) {
-                if x.is_basin(&heights) {
-                    to_check.push(x);
-                    size += 1;
-                }
-            }
+            to_check.extend(p.iter_adjacent(&heights)
+                .filter(|x| !visited.contains(x))
+                .filter(|x| x.is_basin(&heights)));
             visited.extend(&to_check);
         }
-        top_basins[0] = size;
+        top_basins[0] = visited.len();
         top_basins.sort();
     }
 
-
-    println!("Sizes: {:?}", top_basins);
     let result2 = top_basins[1..].iter().fold(1, |a, b| a * b);
     Ok((result1, result2))
 }
