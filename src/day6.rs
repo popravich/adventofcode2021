@@ -26,7 +26,7 @@ pub fn parse_input(input: &str) -> Result<Vec<usize>, String> {
 }
 
 #[derive(Debug)]
-struct Population {
+pub struct Population {
     days: [u64; D],
 }
 
@@ -45,6 +45,7 @@ impl Population {
         for _ in 0..n {
             let reset = self.days[0];
             let newbies = self.days[0];
+            // self.days.copy_within(1.., 0);
             for i in 1..D {
                 self.days[i-1] = self.days[i];
             }
