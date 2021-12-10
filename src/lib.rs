@@ -9,6 +9,7 @@ pub mod day5;
 pub mod day6;
 pub mod day7;
 pub mod day8;
+pub mod day9;
 
 
 #[wasm_bindgen]
@@ -86,6 +87,16 @@ pub fn day7_task(input: &str) -> Answer {
 pub fn day8_task(input: &str) -> Answer {
     console_error_panic_hook::set_once();
     let (result1, result2) = day8::main(input).expect("invalid data");
+    Answer {
+        result1,
+        result2,
+    }
+}
+
+#[wasm_bindgen]
+pub fn day9_task(input: &str) -> Answer {
+    console_error_panic_hook::set_once();
+    let (result1, result2) = day9::main(input).expect("invalid data");
     Answer {
         result1,
         result2,
