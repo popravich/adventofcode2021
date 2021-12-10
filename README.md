@@ -5,7 +5,7 @@ Advent Of Code 2021
 ## CLI variant of code.
 
 ```
-    cargo run --bin dayX
+    cargo run --bin X
 ```
 
 where `X` is the day number.
