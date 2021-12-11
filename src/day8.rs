@@ -211,7 +211,7 @@ impl TranscodingTable {
 mod test {
     use crate::day8::main;
 
-    static input: &str = concat!(
+    static INPUT: &str = concat!(
         "be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe\n",
         "edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc\n",
         "fgaebd cg bdaec gdafb agbcfd gdcbef bgcad gfac gcb cdgabef | cg cg fdcagb cbg\n",
@@ -226,13 +226,13 @@ mod test {
 
    #[test]
    fn part1() {
-        let (part1, _) = main(input).unwrap();
+        let (part1, _) = main(INPUT).unwrap();
         assert_eq!(part1, 26);
    }
 
    #[test]
    fn part2() {
-        let (_, part2) = main(input).unwrap();
+        let (_, part2) = main(INPUT).unwrap();
         assert_eq!(part2, 61229);
    }
 }
