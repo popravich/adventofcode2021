@@ -11,6 +11,7 @@ use advent::{
     day8,
     day9,
     day10,
+    day11,
 };
 
 static DAY1: &str = include_str!("./input/day1.txt");
@@ -23,6 +24,7 @@ static DAY7: &str = include_str!("./input/day7.txt");
 static DAY8: &str = include_str!("./input/day8.txt");
 static DAY9: &str = include_str!("./input/day9.txt");
 static DAY10: &str = include_str!("./input/day10.txt");
+static DAY11: &str = include_str!("./input/day11.txt");
 
 fn main() -> Result<(), String> {
     let day = env::args()
@@ -84,6 +86,11 @@ fn main() -> Result<(), String> {
         }
         10 => {
             let (result1, result2) = day10::main(DAY10)?;
+            println!("Result1: {}", result1);
+            println!("Result2: {}", result2);
+        }
+        11 => {
+            let (result1, result2) = day11::main(DAY11)?;
             println!("Result1: {}", result1);
             println!("Result2: {}", result2);
         }

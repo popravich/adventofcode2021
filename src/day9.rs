@@ -34,7 +34,7 @@ pub fn main(input: &str) -> Result<(usize, usize), String> {
         visited.insert(p);
         while !to_check.is_empty() {
             let p = to_check.remove(0);
-            to_check.extend(p.iter_adjacent(&heights)
+            to_check.extend(p.iter_adjacent(heights.width, heights.len())
                 .filter(|x| !visited.contains(x))
                 .filter(|x| x.is_basin(&heights)));
             visited.extend(&to_check);
@@ -50,8 +50,8 @@ pub fn main(input: &str) -> Result<(usize, usize), String> {
 
 #[derive(Debug, Default)]
 pub struct Heightmap {
-    width: usize,
-    data: Vec<u8>,
+    pub width: usize,
+    pub data: Vec<u8>,
 }
 impl FromStr for Heightmap {
     type Err = String;
@@ -84,25 +84,25 @@ impl Heightmap {
 }
 
 #[derive(Debug, Hash, Eq, PartialEq, Clone, Copy)]
-pub struct Point(usize);
+pub struct Point(pub usize);
 
 impl Point {
-    pub fn is_north(&self, hm: &Heightmap) -> bool {
-        self.0 < hm.width
+    pub fn is_north(&self, width: usize, _len: usize) -> bool {
+        self.0 < width
     }
-    pub fn is_south(&self, hm: &Heightmap) -> bool {
-        self.0 >= hm.data.len() - hm.width
+    pub fn is_south(&self, width: usize, len: usize) -> bool {
+        self.0 >= len - width
     }
-    pub fn is_east(&self, hm: &Heightmap) -> bool {
-        self.0 % hm.width == 0
+    pub fn is_east(&self, width: usize, _len: usize) -> bool {
+        self.0 % width == 0
     }
-    pub fn is_west(&self, hm: &Heightmap) -> bool {
-        self.0 % hm.width == hm.width - 1
+    pub fn is_west(&self, width: usize, _len: usize) -> bool {
+        self.0 % width == width - 1
     }
 
     pub fn is_minimum(&self, hm: &Heightmap) -> bool {
         let h = hm.get(self);
-        self.iter_adjacent(hm)
+        self.iter_adjacent(hm.width, hm.len())
             .map(|x| hm.get(&x))
             .all(|x| h < x)
     }
@@ -110,13 +110,14 @@ impl Point {
     pub fn is_basin(&self, hm: &Heightmap) -> bool {
         hm.get(self) < 9
     }
-    pub fn iter_adjacent(&self, hm: &Heightmap) -> impl Iterator<Item=Point> {
-        let n = !self.is_north(hm);
-        let w = !self.is_west(hm);
-        let s = !self.is_south(hm);
-        let e = !self.is_east(hm);
+    pub fn iter_adjacent(&self, width: usize, len: usize)
+        -> impl Iterator<Item=Point>
+    {
+        let n = !self.is_north(width, len);
+        let w = !self.is_west(width, len);
+        let s = !self.is_south(width, len);
+        let e = !self.is_east(width, len);
         let i = self.0;
-        let width = hm.width;
         (0..4).into_iter()
             .filter_map(move |di| {
                 match di {
@@ -157,52 +158,52 @@ mod test {
         assert_eq!(hm.len(), 5*10);
 
         let x = Point(0);
-        assert!(x.is_north(&hm));
-        assert!(x.is_east(&hm));
-        assert!(!x.is_south(&hm));
-        assert!(!x.is_west(&hm));
+        assert!(x.is_north(hm.width, hm.len()));
+        assert!(x.is_east(hm.width, hm.len()));
+        assert!(!x.is_south(hm.width, hm.len()));
+        assert!(!x.is_west(hm.width, hm.len()));
 
         let x = Point(9);
-        assert!(x.is_north(&hm));
-        assert!(!x.is_east(&hm));
-        assert!(!x.is_south(&hm));
-        assert!(x.is_west(&hm));
+        assert!(x.is_north(hm.width, hm.len()));
+        assert!(!x.is_east(hm.width, hm.len()));
+        assert!(!x.is_south(hm.width, hm.len()));
+        assert!(x.is_west(hm.width, hm.len()));
 
         let x = Point(10);
-        assert!(!x.is_north(&hm));
-        assert!(x.is_east(&hm));
-        assert!(!x.is_south(&hm));
-        assert!(!x.is_west(&hm));
+        assert!(!x.is_north(hm.width, hm.len()));
+        assert!(x.is_east(hm.width, hm.len()));
+        assert!(!x.is_south(hm.width, hm.len()));
+        assert!(!x.is_west(hm.width, hm.len()));
 
         let x = Point(19);
-        assert!(!x.is_north(&hm));
-        assert!(!x.is_east(&hm));
-        assert!(!x.is_south(&hm));
-        assert!(x.is_west(&hm));
+        assert!(!x.is_north(hm.width, hm.len()));
+        assert!(!x.is_east(hm.width, hm.len()));
+        assert!(!x.is_south(hm.width, hm.len()));
+        assert!(x.is_west(hm.width, hm.len()));
 
         let x = Point(40);
-        assert!(!x.is_north(&hm));
-        assert!(x.is_east(&hm));
-        assert!(x.is_south(&hm));
-        assert!(!x.is_west(&hm));
+        assert!(!x.is_north(hm.width, hm.len()));
+        assert!(x.is_east(hm.width, hm.len()));
+        assert!(x.is_south(hm.width, hm.len()));
+        assert!(!x.is_west(hm.width, hm.len()));
 
         let x = Point(41);
-        assert!(!x.is_north(&hm));
-        assert!(!x.is_east(&hm));
-        assert!(x.is_south(&hm));
-        assert!(!x.is_west(&hm));
+        assert!(!x.is_north(hm.width, hm.len()));
+        assert!(!x.is_east(hm.width, hm.len()));
+        assert!(x.is_south(hm.width, hm.len()));
+        assert!(!x.is_west(hm.width, hm.len()));
 
         let x = Point(49);
-        assert!(!x.is_north(&hm));
-        assert!(!x.is_east(&hm));
-        assert!(x.is_south(&hm));
-        assert!(x.is_west(&hm));
+        assert!(!x.is_north(hm.width, hm.len()));
+        assert!(!x.is_east(hm.width, hm.len()));
+        assert!(x.is_south(hm.width, hm.len()));
+        assert!(x.is_west(hm.width, hm.len()));
 
         let x = Point(13);
-        assert!(!x.is_north(&hm));
-        assert!(!x.is_east(&hm));
-        assert!(!x.is_south(&hm));
-        assert!(!x.is_west(&hm));
+        assert!(!x.is_north(hm.width, hm.len()));
+        assert!(!x.is_east(hm.width, hm.len()));
+        assert!(!x.is_south(hm.width, hm.len()));
+        assert!(!x.is_west(hm.width, hm.len()));
 
         assert!(Point(1).is_minimum(&hm));
     }
