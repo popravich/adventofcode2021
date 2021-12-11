@@ -32,7 +32,36 @@ pub fn main(input: &str) -> Result<(usize, usize), String> {
         energy_levels.reset();
     }
 
-    Ok((part1, 0))
+    // read initial state
+    energy_levels = input
+        .parse().map_err(|e| format!("{}", e))?;
+    let mut part2 = 0;
+    loop {
+        part2 += 1;
+        flashes.clear();
+        for p in (0..energy_levels.len()).map(Point) {
+            if energy_levels.incr(&p) {
+                flashes.push(p);
+            }
+        }
+        while !flashes.is_empty() {
+            let x = flashes.remove(0);
+            for p in x.iter_neighbours(10, 100) {
+                if energy_levels.get(&p) > 9 {
+                    continue
+                }
+                if energy_levels.incr(&p) {
+                    flashes.push(p);
+                }
+            }
+        }
+        energy_levels.reset();
+        if energy_levels.data.iter().map(|&i| i as usize).sum::<usize>() == 0 {
+            break
+        }
+    }
+
+    Ok((part1, part2))
 }
 
 // Extend day9 code
