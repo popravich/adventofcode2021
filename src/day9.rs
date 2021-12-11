@@ -9,7 +9,7 @@ pub fn main(input: &str) -> Result<(usize, usize), String> {
     while i < heights.len() {
         let p = Point(i);
         if p.is_minimum(&heights) {
-            extremums.push((p.0, heights.get(&p) as usize));
+            extremums.push((p, heights.get(&p) as usize));
             i += 2;
             continue
         }
@@ -26,7 +26,7 @@ pub fn main(input: &str) -> Result<(usize, usize), String> {
     let mut visited = HashSet::new();
     let mut to_check = Vec::new();
 
-    for p in extremums.iter().map(|&(i, _)| Point(i)) {
+    for p in extremums.iter().map(|&(i, _)| i) {
         assert!(p.is_basin(&heights));
         to_check.clear();
         to_check.push(p);
