@@ -14,25 +14,16 @@ pub fn main(input: &str) -> Result<(usize, usize), String> {
             .or_default()
             .insert(a.to_string());
     }
-    println!("{:?}", graph);
-    println!("size: {}", graph.len());
-    println!("Permutations: {}", (1..=graph.len()).map(|i| i as u128).product::<u128>());
 
     let mut todo = Vec::from([Path {
         node: "start".to_string(),
-        // visited: HashSet::from(["start".to_string()]),
         ..Default::default()
     }]);
-    let mut x = 0;
+    let mut part1 = 0;
     while !todo.is_empty() {
         let mut node = todo.remove(0);
         if node.is_end() {
-            println!("Found one: {:?}", node);
-            x += 1;
-            continue
-        } 
-        // println!("{:?}", node);
-        if !node.can_reenter() {
+            part1 += 1;
             continue
         }
         node.enter();
@@ -40,10 +31,33 @@ pub fn main(input: &str) -> Result<(usize, usize), String> {
             .get(&node.node)
             .iter()
             .flat_map(|&v| v.iter())
+            .filter(|s| node.can_reenter(s))
             .map(|s| node.next(s)));
-        
+
     }
-    Ok((x, 0))
+
+    println!("Part2");
+    let mut part2 = 0;
+    let mut todo = Vec::from([Path {
+        node: "start".to_string(),
+        ..Default::default()
+    }]);
+    while !todo.is_empty() {
+        let mut node = todo.remove(0);
+        if node.is_end() {
+            part2 += 1;
+            continue
+        }
+        node.enter();
+        todo.extend(graph
+            .get(&node.node)
+            .iter()
+            .flat_map(|&v| v.iter())
+            .filter(|s| node.can_reenter(s) || node.maybe_one_more_time(s))
+            .map(|s| node.next(s)));
+
+    }
+    Ok((part1, part2))
 }
 
 #[derive(Debug, Default, Clone)]
@@ -51,16 +65,24 @@ struct Path {
     prefix: String,
     node: String,
     visited: HashSet<String>,
+    visits: usize,
 }
 
 impl Path {
-    pub fn can_reenter(&self) -> bool {
-        !self.visited.contains(&self.node)
+    pub fn can_reenter(&self, node: &str) -> bool {
+        !self.visited.contains(node)
+    }
+    pub fn maybe_one_more_time(&self, node: &str) -> bool {
+        assert!(!self.can_reenter(node));
+        self.visits == 0 && node != "start"
     }
 
     pub fn enter(&mut self) {
         if self.node.as_bytes()[0].is_ascii_lowercase() {
-            self.visited.insert(self.node.clone());
+            let is_new = self.visited.insert(self.node.clone());
+            if !is_new {
+                self.visits += 1;
+            }
         }
     }
 
@@ -74,6 +96,7 @@ impl Path {
             prefix,
             node: node.to_string(),
             visited: self.visited.clone(),
+            visits: self.visits,
         }
     }
 
@@ -104,6 +127,6 @@ mod test {
     fn solution() {
         let (p1, p2) = main(DATA).expect("invalid data");
         assert_eq!(p1, 19);
-        assert_eq!(p2, 0);
+        assert_eq!(p2, 103);
     }
 }
