@@ -20,6 +20,30 @@ pub fn main(input: &str) -> Result<(usize, usize), String> {
         .map(|d| d.translate(&folds[0]))
         .collect::<HashSet<_>>();
 
+    let mut part2 = dots.into_iter().collect::<HashSet<_>>();
+    for f in folds {
+        part2 = part2
+            .into_iter()
+            .map(|d| d.translate(&f))
+            .collect()
+    }
+
+
+    let max_x = part2.iter().map(|d| d.x).max().expect("no data");
+    let max_y = part2.iter().map(|d| d.y).max().expect("no data");
+
+    for y in 0..=max_y {
+        for x in 0..=max_x {
+            let d = Dot { x, y };
+            if part2.contains(&d) {
+                print!("x");
+            } else {
+                print!(" ");
+            }
+        }
+        println!("");
+    }
+
     Ok((part1.len(), 0))
 }
 
