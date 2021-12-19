@@ -11,7 +11,6 @@ pub fn main(input: &str) -> Result<(usize, usize), String> {
             hi << 4 | lo
         })
         .collect();
-    println!("Vec:\n{}\n{:?}", input, bytes);
     let mut bits = BitsIter::new(bytes);
     
     let mut messages = Vec::new();
@@ -192,7 +191,7 @@ impl Packet {
             .collect()
     }
     pub fn parse_by_bits(bits: &mut BitsIter) -> Vec<Message> {
-        let mut bits_len = dbg!(bits.take(15)) as usize;
+        let mut bits_len = bits.take(15) as usize;
         bits_len = bits.bit_len() - bits_len;
         let mut value = Vec::new();
         while bits.bit_len() > bits_len {
@@ -277,7 +276,6 @@ impl BitsIter {
     }
         
     pub fn take(&mut self, bits: u32) -> u32 {
-        println!("take {}; {:X}; off:{}", bits, self.inner[0], self.bits_offset);
         assert!(bits <= u32::BITS);
         let take = |byte: u32, shift: u32, mask_bits: u32| -> u32 {
             let mask = (1 << mask_bits) - 1;
@@ -300,7 +298,6 @@ impl BitsIter {
             // self.inner.remove(0);
             let shift = shift.abs() as u32;
             for _ in 0..shift / 8 {
-                println!("take' {}; {:X}; off:{}", 8, self.inner[0], self.bits_offset);
                 result = result << 8 | (self.inner.remove(0) as u32);
             }
             let shift = shift % 8;
@@ -333,34 +330,30 @@ mod test {
 
     #[test]
     fn solution1() {
-        let (p1, p2) = main("8A004A801A8002F478")
+        let (p1, _) = main("8A004A801A8002F478")
             .expect("invalid input");
         assert_eq!(p1, 16);
-        assert_eq!(p2, 0);
     }
 
     #[test]
     fn solution2() {
-        let (p1, p2) = main("620080001611562C8802118E34")
+        let (p1, _) = main("620080001611562C8802118E34")
             .expect("invalid input");
         assert_eq!(p1, 12);
-        assert_eq!(p2, 0);
     }
 
     #[test]
     fn solution3() {
-        let (p1, p2) = main("C0015000016115A2E0802F182340")
+        let (p1, _) = main("C0015000016115A2E0802F182340")
             .expect("invalid input");
         assert_eq!(p1, 23);
-        assert_eq!(p2, 0);
     }
 
     #[test]
     fn solution4() {
-        let (p1, p2) = main("A0016C880162017C3686B18A3D4780")
+        let (p1, _) = main("A0016C880162017C3686B18A3D4780")
             .expect("invalid input");
         assert_eq!(p1, 31);
-        assert_eq!(p2, 0);
     }
 
     #[test]
