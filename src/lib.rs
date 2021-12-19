@@ -15,6 +15,7 @@ pub mod day11;
 pub mod day12;
 pub mod day13;
 pub mod day14;
+pub mod day15;
 
 
 #[wasm_bindgen]
@@ -152,6 +153,16 @@ pub fn day13_task(input: &str) -> Answer {
 pub fn day14_task(input: &str) -> Answer {
     console_error_panic_hook::set_once();
     let (result1, result2) = day14::main(input).expect("invalid data");
+    Answer {
+        result1: result1.try_into().expect("overflow"),
+        result2: result2.try_into().expect("overflow"),
+    }
+}
+
+#[wasm_bindgen]
+pub fn day15_task(input: &str) -> Answer {
+    console_error_panic_hook::set_once();
+    let (result1, result2) = day15::main(input).expect("invalid data");
     Answer {
         result1: result1.try_into().expect("overflow"),
         result2: result2.try_into().expect("overflow"),
