@@ -14,5 +14,6 @@ path = "src/main.rs"
 
 [dependencies]
 console_error_panic_hook = "0.1.7"
+crossterm = "0.22.1"
 wasm-bindgen = "0.2.74"
 web-sys = {version = "0.3.51", features = ["console"]}
