@@ -22,7 +22,10 @@ pub fn main(input: &str) -> Result<(usize, usize), String> {
         .iter()
         .map(|m| m.versions_sum() as usize)
         .sum::<usize>();
-    Ok((part1, 0))
+
+    assert_eq!(messages.len(), 1);
+    let part2 = messages[0].result_value();
+    Ok((part1, part2))
 }
 
 #[derive(Debug)]
@@ -36,9 +39,29 @@ pub enum Packet {
     Literal {
         value: usize,
     },
-    Operator {
-        kind: u32,
-        value: Vec<Message>
+    Sum {
+        values: Vec<Message>,
+    },
+    Product {
+        values: Vec<Message>,
+    },
+    Min {
+        values: Vec<Message>,
+    },
+    Max {
+        values: Vec<Message>,
+    },
+    Greater {
+        left: Box<Message>,
+        right: Box<Message>,
+    },
+    Less {
+        left: Box<Message>,
+        right: Box<Message>,
+    },
+    Equal {
+        left: Box<Message>,
+        right: Box<Message>,
     }
 }
 
@@ -50,17 +73,31 @@ impl Message {
     }
 
     pub fn versions_sum(&self) -> u32 {
+        use self::Packet::*;
         match self.packet {
-            Packet::Operator { ref value, .. } => {
-                value
+            Sum { ref values } |
+            Product { ref values } |
+            Min { ref values } |
+            Max { ref values } => {
+                values
                     .iter()
                     .map(|m| m.versions_sum())
                     .sum::<u32>() + self.version
             }
-            _ => self.version,
+            Greater { ref left, ref right } |
+            Less { ref left, ref right } |
+            Equal { ref left, ref right } => {
+                left.versions_sum() + right.versions_sum()
+            },
+            Literal { .. } => self.version,
         }
     }
+
+    pub fn result_value(&self) -> usize {
+        self.packet.result_value()
+    }
 }
+
 
 impl Packet {
     pub fn parse(bits: &mut BitsIter) -> Self {
@@ -69,28 +106,72 @@ impl Packet {
                 let value = Packet::parse_literal(bits);
                 Packet::Literal { value }
             }
-            kind => {
-                let value = match bits.take(1) {
-                    0 => {
-                        let mut bits_len = dbg!(bits.take(15)) as usize;
-                        bits_len = bits.bit_len() - bits_len;
-                        let mut value = Vec::new();
-                        while bits.bit_len() > bits_len {
-                            value.push(Message::parse(bits));
-                        }
-                        value
-                    }
-                    1 => {
-                        let packets_len = bits.take(11);
-                        (0..packets_len)
-                            .into_iter()
-                            .map(|_| Message::parse(bits))
-                            .collect()
-                    }
+            0 => {
+                let values = match bits.take(1) {
+                    0 => Packet::parse_by_bits(bits),
+                    1 => Packet::parse_by_count(bits),
                     _ => unreachable!(),
                 };
-                Packet::Operator { kind, value }
+                Packet::Sum { values }
             }
+            1 => {
+                let values = match bits.take(1) {
+                    0 => Packet::parse_by_bits(bits),
+                    1 => Packet::parse_by_count(bits),
+                    _ => unreachable!(),
+                };
+                Packet::Product { values }
+            }
+            2 => {
+                let values = match bits.take(1) {
+                    0 => Packet::parse_by_bits(bits),
+                    1 => Packet::parse_by_count(bits),
+                    _ => unreachable!(),
+                };
+                Packet::Min { values }
+            }
+            3 => {
+                let values = match bits.take(1) {
+                    0 => Packet::parse_by_bits(bits),
+                    1 => Packet::parse_by_count(bits),
+                    _ => unreachable!(),
+                };
+                Packet::Max { values }
+            }
+            5 => {
+                let mut values = match bits.take(1) {
+                    0 => Packet::parse_by_bits(bits),
+                    1 => Packet::parse_by_count(bits),
+                    _ => unreachable!(),
+                };
+                let left = Box::new(values.remove(0));
+                let right = Box::new(values.remove(0));
+                assert!(values.is_empty());
+                Packet::Greater { left, right }
+            }
+            6 => {
+                let mut values = match bits.take(1) {
+                    0 => Packet::parse_by_bits(bits),
+                    1 => Packet::parse_by_count(bits),
+                    _ => unreachable!(),
+                };
+                let left = Box::new(values.remove(0));
+                let right = Box::new(values.remove(0));
+                assert!(values.is_empty());
+                Packet::Less { left, right }
+            }
+            7 => {
+                let mut values = match bits.take(1) {
+                    0 => Packet::parse_by_bits(bits),
+                    1 => Packet::parse_by_count(bits),
+                    _ => unreachable!(),
+                };
+                let left = Box::new(values.remove(0));
+                let right = Box::new(values.remove(0));
+                assert!(values.is_empty());
+                Packet::Equal { left, right }
+            }
+            _ => unreachable!(),
         }
     }
 
@@ -102,6 +183,82 @@ impl Packet {
             result = result << 4 | (value & 0b1111);
         }
         result
+    }
+    pub fn parse_by_count(bits: &mut BitsIter) -> Vec<Message> {
+        let packets_len = bits.take(11);
+        (0..packets_len)
+            .into_iter()
+            .map(|_| Message::parse(bits))
+            .collect()
+    }
+    pub fn parse_by_bits(bits: &mut BitsIter) -> Vec<Message> {
+        let mut bits_len = dbg!(bits.take(15)) as usize;
+        bits_len = bits.bit_len() - bits_len;
+        let mut value = Vec::new();
+        while bits.bit_len() > bits_len {
+            value.push(Message::parse(bits));
+        }
+        value
+    }
+
+    pub fn result_value(&self) -> usize {
+        use self::Packet::*;
+        match self {
+            Literal { value } => *value as usize,
+            Sum { values } => {
+                values
+                    .iter()
+                    .map(|msg| msg.result_value())
+                    .sum::<usize>()
+            }
+            Product { values } => {
+                values
+                    .iter()
+                    .map(|msg| msg.result_value())
+                    .product::<usize>()
+            }
+            Min { values } => {
+                values
+                    .iter()
+                    .map(|msg| msg.result_value())
+                    .min()
+                    .expect("empty values")
+            }
+            Max { values } => {
+                values
+                    .iter()
+                    .map(|msg| msg.result_value())
+                    .max()
+                    .expect("empty values")
+            }
+            Greater { left, right } => {
+                let left = left.result_value();
+                let right = right.result_value();
+                if left > right {
+                    1
+                } else {
+                    0
+                }
+            }
+            Less { ref left, ref right } => {
+                let left = left.result_value();
+                let right = right.result_value();
+                if left < right {
+                    1
+                } else {
+                    0
+                }
+            }
+            Equal { ref left, ref right } => {
+                let left = left.result_value();
+                let right = right.result_value();
+                if left == right {
+                    1
+                } else {
+                    0
+                }
+            }
+        }
     }
 }
 
@@ -204,6 +361,13 @@ mod test {
             .expect("invalid input");
         assert_eq!(p1, 31);
         assert_eq!(p2, 0);
+    }
+
+    #[test]
+    fn solution5() {
+        let (_p1, p2) = main("C200B40A82")
+            .expect("invalid input");
+        assert_eq!(p2, 3);
     }
 
     #[test]
