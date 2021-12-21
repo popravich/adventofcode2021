@@ -177,7 +177,8 @@ impl Diagonal {
     }
 }
 
-enum Either<T, U> {
+#[derive(Debug)]
+pub enum Either<T, U> {
     A(T),
     B(U),
 }
